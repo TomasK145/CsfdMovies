@@ -88,7 +88,6 @@ namespace Csfd
         private string GetTitleSk(HtmlDocument doc)
         {
             string titleSk = string.Empty;
-            //var node = doc.DocumentNode.SelectNodes("/html[1]/body[1]/div[2]/div[2]/div[1]/div[1]/div[1]/div[2]/div[1]"); //OK
             var node = doc.DocumentNode.SelectNodes("//div[@class='header']//h1");
             if (node != null)
             {
@@ -145,11 +144,8 @@ namespace Csfd
         private string GetOriginCountry(HtmlDocument document)
         {
             string originCountry = string.Empty;
-
-            //var node = document.DocumentNode.SelectNodes("/html[1]/body[1]/div[2]/div[2]/div[1]/div[1]/div[1]/div[2]/p[2]").FirstOrDefault(); //OK
             var node = document.DocumentNode.SelectSingleNode("//p[@class='origin']");
             originCountry = node?.InnerText.Split(',')[0];
-
             return originCountry;
         }
     }
