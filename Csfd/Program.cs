@@ -32,6 +32,10 @@ namespace Csfd
                     }
                     sb.AppendLine(movie.ToString());
                     //movies.Add(movie); //TODO: treba pridavat filmy aj do listu filmov??? vyuzitie???
+
+                    sw.Stop();
+                    Console.WriteLine("Ziskanie filmu " + movieName + " - duration: " + sw.ElapsedMilliseconds + " ms");
+                    sw.Restart();
                 }
                 sw.Stop();
                 Console.WriteLine("Ziska info o jednotlivych filmoch - trvanie: " + sw.ElapsedMilliseconds + " ms");
@@ -120,9 +124,9 @@ namespace Csfd
         {
             List<YearRange> years = new List<YearRange>()
             {
-                new YearRange("","1980"),
-                new YearRange("1980","1985"),
-                new YearRange("1985","1990"),
+                //new YearRange("","1980"),
+                //new YearRange("1980","1985"),
+                //new YearRange("1985","1990"),
                 new YearRange("1990","1995"),
                 new YearRange("1995","2000"),
                 new YearRange("2000","2005"),
