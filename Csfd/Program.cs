@@ -59,6 +59,7 @@ namespace Csfd
         {
             HashSet<string> movieList = new HashSet<string>();
             CsfdApi api = new CsfdApi();
+            Stopwatch sw = new Stopwatch();
 
             ////for (int i = 1; i<= 250; i++)
             ////TODO: ake krajiny??? inicializuj pole krajin
@@ -85,19 +86,28 @@ namespace Csfd
             //    }                
             //}
 
+            sw.Start();
             foreach (Country country in Enum.GetValues(typeof(Country)))
             {
                 foreach (Genre zaner in Enum.GetValues(typeof(Genre)))
                 {
-                    string origin = country.ToString();
-                    string genre = zaner.ToString();
+                    foreach (YearRange year in GetYearRangeList())
+                    {
+                        string origin = ((int)country).ToString();
+                        string genre = ((int)zaner).ToString();
 
-                    string searchUrl = $"https://www.csfd.cz/zebricky/specificky-vyber/?type=0&origin={origin}&genre={genre}&year_from=2011&year_to=2017&actor=&director=&ok=Zobrazit&_form_=charts&show=complete";
-                    api.GetSearch(movieList, searchUrl);
+                        string searchUrl = $"https://www.csfd.cz/zebricky/specificky-vyber/?type=0&origin={origin}&genre={genre}&year_from={year.YearFrom}&year_to={year.YearTo}&actor=&director=&ok=Zobrazit&_form_=charts&show=complete";
+                        api.GetSearch(movieList, searchUrl);
+
+                        sw.Stop();
+                        Console.WriteLine("Country: " + origin + " - Genre: " + genre + " - YearRange: " + year.ToString() + " - MoviesCount: " + movieList.Count + " - duration: " + sw.ElapsedMilliseconds + " ms");
+                        sw.Restart();
+                    }
+                    
                 }
             }
 
-            //TODO: nejakym sposobom ukladat vysledky 
+            //TODO: nejakym sposobom ukladat vysledky persistentne
 
             
 
@@ -105,6 +115,25 @@ namespace Csfd
             Console.WriteLine("TestSearch done");
             return movieList;
         }
+
+        private static List<YearRange> GetYearRangeList()
+        {
+            List<YearRange> years = new List<YearRange>()
+            {
+                new YearRange("","1980"),
+                new YearRange("1980","1985"),
+                new YearRange("1985","1990"),
+                new YearRange("1990","1995"),
+                new YearRange("1995","2000"),
+                new YearRange("2000","2005"),
+                new YearRange("2005","2010"),
+                new YearRange("2010","2015"),
+                new YearRange("2015",""),
+            };            
+
+            return years;
+        }
+
 
         private static void WriteFile(string text)
         {
