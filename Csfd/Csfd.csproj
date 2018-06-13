@@ -53,6 +53,7 @@
     <Compile Include="MovieParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SearchCriteria.cs" />
     <Compile Include="SearchParser.cs" />
     <Compile Include="YearRange.cs" />
   </ItemGroup>

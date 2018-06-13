@@ -13,12 +13,13 @@ namespace Csfd
             try
             {
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine("Nazov original,Nazov SK,Rok produkcie,Stat produkcie,URL,Hodnotenie");
                 List<Movie> movies = new List<Movie>();
 
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-                HashSet<string> movieNames = TestSearch();
+
+                //najskor inicializuj list datami z DB
+                HashSet<string> movieNames = GetMovieNames();
                 sw.Stop();
                 Console.WriteLine("Ziskanie zoznamu filmov - trvanie: " + sw.ElapsedMilliseconds + " ms");
 
@@ -41,7 +42,7 @@ namespace Csfd
                 Console.WriteLine("Ziska info o jednotlivych filmoch - trvanie: " + sw.ElapsedMilliseconds + " ms");
 
                 Console.WriteLine("GetMovie done");
-                WriteFile(sb.ToString());
+                ExportMoviesToCsv(sb.ToString());
             }
             catch (Exception ex) 
             {
@@ -59,64 +60,41 @@ namespace Csfd
             return movie;
         }
 
-        private static HashSet<string> TestSearch()
+        private static HashSet<string> GetMovieNames()
         {
             HashSet<string> movieList = new HashSet<string>();
-            CsfdApi api = new CsfdApi();
-            Stopwatch sw = new Stopwatch();
-
-            ////for (int i = 1; i<= 250; i++)
-            ////TODO: ake krajiny??? inicializuj pole krajin
-            //for (int i = 179; i <= 179; i++) //172 - USA, 44 - Francuzsko, 61 - Taliansko, 179 - VB
-            //{
-            //    //TODO: inicializuj pole zanrov
-            //    //for (int j = 1; j <= 45; j++) //1 - akcne
-            //    for (int j = 1; j <= 1; j++) //1 - akcne
-            //    {
-            //        string origin = Convert.ToString(i);
-            //        string genre = Convert.ToString(j);
-
-            //        //string searchUrl = $"https://www.csfd.cz/zebricky/specificky-vyber/?type=0&origin={origin}&genre={genre}&year_from=&year_to=2000&actor=&director=&ok=Zobrazit&_form_=charts&show=complete";
-            //        //api.GetSearch(movieList, searchUrl);
-
-            //        //searchUrl = $"https://www.csfd.cz/zebricky/specificky-vyber/?type=0&origin={origin}&genre={genre}&year_from=2001&year_to=2005&actor=&director=&ok=Zobrazit&_form_=charts&show=complete";
-            //        //api.GetSearch(movieList, searchUrl);
-
-            //        //searchUrl = $"https://www.csfd.cz/zebricky/specificky-vyber/?type=0&origin={origin}&genre={genre}&year_from=2006&year_to=2010&actor=&director=&ok=Zobrazit&_form_=charts&show=complete";
-            //        //api.GetSearch(movieList, searchUrl);
-
-            //        string searchUrl = $"https://www.csfd.cz/zebricky/specificky-vyber/?type=0&origin={origin}&genre={genre}&year_from=2011&year_to=2017&actor=&director=&ok=Zobrazit&_form_=charts&show=complete";
-            //        api.GetSearch(movieList, searchUrl);
-            //    }                
-            //}
-
-            sw.Start();
+            List<YearRange> yearRanges = GetYearRangeList();
             foreach (Country country in Enum.GetValues(typeof(Country)))
             {
-                foreach (Genre zaner in Enum.GetValues(typeof(Genre)))
+                foreach (Genre genre in Enum.GetValues(typeof(Genre)))
                 {
-                    foreach (YearRange year in GetYearRangeList())
+                    foreach (YearRange yearRange in yearRanges)
                     {
-                        string origin = ((int)country).ToString();
-                        string genre = ((int)zaner).ToString();
+                        Stopwatch sw = new Stopwatch();
+                        sw.Start();
 
-                        string searchUrl = $"https://www.csfd.cz/zebricky/specificky-vyber/?type=0&origin={origin}&genre={genre}&year_from={year.YearFrom}&year_to={year.YearTo}&actor=&director=&ok=Zobrazit&_form_=charts&show=complete";
-                        api.GetSearch(movieList, searchUrl);
+                        HashSet<string> movieListCurrent = GetMovieNamesBySearchCriteria(country, genre, yearRange);
+                        movieList.UnionWith(movieListCurrent);
 
                         sw.Stop();
-                        Console.WriteLine("Country: " + origin + " - Genre: " + genre + " - YearRange: " + year.ToString() + " - MoviesCount: " + movieList.Count + " - duration: " + sw.ElapsedMilliseconds + " ms");
+                        Console.WriteLine("Country: " + country + " - Genre: " + genre + " - YearRange: " + yearRange.ToString() + " - MoviesCount: " + movieListCurrent.Count + " - duration: " + sw.ElapsedMilliseconds + " ms");
                         sw.Restart();
                     }
-                    
                 }
             }
+            return movieList;
+        }        
 
-            //TODO: nejakym sposobom ukladat vysledky persistentne
+        private static HashSet<string> GetMovieNamesBySearchCriteria(Country country, Genre zaner, YearRange yearRange)
+        {          
+            CsfdApi api = new CsfdApi();
+            HashSet<string> movieList = new HashSet<string>();
 
-            
+            string originCountry = ((int)country).ToString();
+            string genre = ((int)zaner).ToString();
+            string searchUrl = $"https://www.csfd.cz/zebricky/specificky-vyber/?type=0&origin={originCountry}&genre={genre}&year_from={yearRange.YearFrom}&year_to={yearRange.YearTo}&actor=&director=&ok=Zobrazit&_form_=charts&show=complete";
+            api.GetSearch(movieList, searchUrl);
 
-
-            Console.WriteLine("TestSearch done");
             return movieList;
         }
 
@@ -139,11 +117,17 @@ namespace Csfd
         }
 
 
-        private static void WriteFile(string text)
+        private static void ExportMoviesToCsv(string text)
         {
-            using (StreamWriter file = new StreamWriter(@"C:\Users\Public\Movies.csv", true))
+            StringBuilder sb = new StringBuilder();
+            const string FilePath = @"C:\Users\Public\Movies.csv";
+
+            sb.AppendLine("Nazov original,Nazov SK,Rok produkcie,Stat produkcie,URL,Hodnotenie");
+            sb.AppendLine(text);
+
+            using (StreamWriter file = new StreamWriter(FilePath, true))
             {
-                file.WriteLine(text);
+                file.WriteLine(sb.ToString());
             }
         }
     }
