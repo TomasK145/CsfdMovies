@@ -95,6 +95,13 @@ namespace Csfd
             string searchUrl = $"https://www.csfd.cz/zebricky/specificky-vyber/?type=0&origin={originCountry}&genre={genre}&year_from={yearRange.YearFrom}&year_to={yearRange.YearTo}&actor=&director=&ok=Zobrazit&_form_=charts&show=complete";
             api.GetSearch(movieList, searchUrl);
 
+            //todo: uloz zoznam filmov ziskanych z danej url
+            var movieInfo = searchUrl + " --> " + String.Join(";", movieList);
+            using (StreamWriter file = new StreamWriter(@"C:\Users\Public\MovieInfo.txt", true))
+            {
+                file.WriteLine(movieInfo);
+            }
+
             return movieList;
         }
 
@@ -102,9 +109,20 @@ namespace Csfd
         {
             List<YearRange> years = new List<YearRange>()
             {
-                //new YearRange("","1980"),
-                //new YearRange("1980","1985"),
-                //new YearRange("1985","1990"),
+                new YearRange("","1920"),
+                new YearRange("1920","1925"),
+                new YearRange("1925","1930"),
+                new YearRange("1935","1940"),
+                new YearRange("1940","1945"),
+                new YearRange("1945","1950"),
+                new YearRange("1950","1955"),
+                new YearRange("1955","1960"),
+                new YearRange("1960","1965"),
+                new YearRange("1965","1970"),
+                new YearRange("1970","1975"),
+                new YearRange("1975","1980"),
+                new YearRange("1980","1985"),
+                new YearRange("1985","1990"),
                 new YearRange("1990","1995"),
                 new YearRange("1995","2000"),
                 new YearRange("2000","2005"),
